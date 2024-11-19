@@ -37,22 +37,19 @@ Docker stack consisting of various arr-services like:
 - Bazarr
   - Used for subtitles 
 - Flaresolverr
-  - Used to bypass Cloudflare for prowlarr
-  - You must add it at prowlarr as indexer with the tag `flaresolverr`
+  - Used to bypass CloudFlare for indexers on Prowlarr
 - Qbittorrent
   - Used as download client; run behind gluetun vpn killswitch container
-  - A temporary password for the `admin` user will be printed to the container log on startup. Change it immediately to a static one that does not change again.
 - Gluetun
-  - Used for establishing an openvpn/wireguard killswitch vpn connection for qbittorrent
-  - Requires an active subscription for a vpn provider (e.g. Mullvad)
-- Emby / Jellyfin
-  - Used to manage your media libraries and stream it from various devices
+  - Used to establish a VPN killswitch connection for Qbittorrent to a commercial VPN provider (e.g. Mullvad)
+- Emby or Jellyfin
+  - Used to manage your media libraries and stream content from various devices
  
 The following bind mount volumes are defined:
 
 - `/arr-suite/configs/<container-name>`
   - holds the config files of an arr container
-- `/arr-suite/media/`
+- `/arr-suite/media/<folder>`
   - will hold your media files such as movies, music, books, tv-shows, qbittorrent downloads etc.
 
 ## Setup
@@ -67,9 +64,38 @@ Please make sure to configure authentication for all arr containers. Authenticat
 
 Please refer to the official wiki of Gluetun to configure it for your commercial VPN provider in use.
 
-For this compose example, we will use Mullvad VPN, which is a privacy-friendly VPN provider that does not log. If you use another VPN provider, you have to adjust the environment variables typically.
+This must be done before spawning up the Docker Compose stack.
+
+For this compose example, we used Mullvad VPN, which is a privacy-friendly VPN provider that does not log. If you use another VPN provider, you have to adjust the environment variables typically.
 
 https://github.com/qdm12/gluetun-wiki
+
+### Volume Mappings
+
+The following bind mount volumes are defined within the Docker Compose stack:
+
+- `/arr-suite/configs/<container-name>`
+  - holds the config files of an arr container; automatically created during during compose stack start
+- `/arr-suite/media/<folder>`
+  - will hold your media files such as movies, music, books, tv-shows, qbittorrent downloads etc.
+  - only the downloads folder will be created automatically by Qbittorrent during compose stack start
+
+The media folders should be created before starting up the compose stack. To do so, issue these commands:
+
+````bash
+# create subfolders for our media library
+mkdir -p ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/arr-suite/media/{downloads,movies,tv-shows,music,books}
+
+# adjust permissions
+sudo chown -R 1000:1000 ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/arr-suite/media/
+sudo chmod -R 775 ${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/arr-suite/media/
+````
+
+Afterwards, we can spawn up the stack via:
+
+````bash
+docker compose up -d
+````
 
 ### Prowlarr
 
@@ -91,9 +117,13 @@ Just make sure that the URL is correct and paste the API key. Should look someth
 
 #### FlareResolverr CloudFlare Bypass
 
-Moreover, we will add FlareResolverr to Prowlarr in order to bypass CloudFlare for some indexers. To do so, head over to `Settings > Indexer` under `/settings/indexers`. Hit the plus button and add FlareResolverr. Ensure to define the correct URL and also the tag `flaresolverr`.
+Moreover, we will add FlareResolverr to Prowlarr in order to bypass CloudFlare for some indexers. To do so, head over to `Settings > Indexer` under `/settings/indexers`. Hit the plus button and add FlareResolverr. 
+
+Ensure to define the correct URL and also the tag `flaresolverr`. The tag must be defined again when adding indexers that are protected by CloudFlare (e.g. 1337x).
 
 ![image](https://github.com/Haxxnet/Compose-Examples/assets/21357789/19a26a74-dae0-4381-9614-46d20f912542)
+
+![image](https://github.com/user-attachments/assets/548c8e93-24da-41fb-8b4d-ba7d9061b51f)
 
 #### Qbittorrent Download Client
 
@@ -125,34 +155,40 @@ Then head over to `Settings > Downloads` and configure the custom download path 
 
 ![image](https://github.com/user-attachments/assets/5c7531eb-2cd7-4b16-968d-32a00cc4020a)
 
+#### Indexers
+
+Add your preferred indexers such as 1337X and many others. Do not forget to add the `flaresolverr` tag to bypass CloudFlare.
+
 ### Sonarr, Radarr, Lidarr, Readarr, Bazarr
 
 All other arr applications follow the same configuration steps.
 
+- Sonarr is accessible at `http://<YOUR-IP>:8989/`
+- Radarr is accessible at `http://<YOUR-IP>:7878/`
+- Lidarr is accessible at `http://<YOUR-IP>:8686/`
+- Readarr is accessible at `http://<YOUR-IP>:8787/`
+- Bazarr is accessible at `http://<YOUR-IP>:6767/`
+
 Follow these steps for each individuall arr container:
 
 1. Configure authentication for the arr's HTTP UI. Can be done regularly via `Settings > General`.
-2. Ensure to define your media location. Can be done regularly via `Settings > Media Management > Root Folders > Path`. Should point to `/media/music` for Lidarr, `/media/tv-shows` for Sonarr, `/media/movies` for Radarr and `/media/books` for Readarr and so on.
-3. Configure Qbittorrent as download client. Can be done regularly via `Settings > Download Clients`. Define your server's IP address at `Host` (or the container name `arr-suite-gluetun`) and `8080` at `Port`.
-4. Configure your quality definitions and indexers (optional)
-5. Configure Bazarr (Radarr and Sonarr only). See https://wiki.bazarr.media/Getting-Started/Setup-Guide/
+2. Ensure to define your media location. Can be done regularly via `Settings > Media Management > Root Folders > Path`. Should point to `/media/music` for Lidarr, `/media/tv-shows` for Sonarr, `/media/movies` for Radarr and `/media/books` for Readarr and so on. If those subdirectories do not exist yet, go ahead and create them via the following command:
+    - `mkdir -p /mnt/docker-volumes/arr-suite/media/{downloads,movies,tv-shows,music,books}`
+4. Configure Qbittorrent as download client. Can be done regularly via `Settings > Download Clients`. Define your server's IP address at `Host` (or the container name `arr-suite-gluetun`) and `8080` at `Port`.
+5. Configure Bazarr for Radarr and Sonarr. See https://wiki.bazarr.media/Getting-Started/Setup-Guide/
 6. Fix all `System > Health` warnings and errors reported by each arr container. May refer to https://wiki.servarr.com/.
-
-- Sonarr is accessible at `http://<YOUR-IP>:8989/`
-- Radarr is accessible at `http://<YOUR-IP>:7979/`
-- Lidarr is accessible at `http://<YOUR-IP>:8686/`
-- Bazarr is accessible at `http://<YOUR-IP>:6767/`
-- Readarr is accessible at `http://<YOUR-IP>:8787/`
 
 ### Emby / Jellyfin
 
-The Docker Compose stack makes use of Emby as default. You can switch to Jellyfin though by removing the Emby container service and uncommenting the Jellyfin one.
+The Docker Compose stack makes use of Emby as default. 
 
-- Emby or Jellyfin will be accessible at `http://<YOUR-IP>:8096/`
+You can switch to Jellyfin by removing the Emby container service and uncommenting the Jellyfin one though.
+
+- Emby or Jellyfin is accessible at `http://<YOUR-IP>:8096/`
 
 Follow the below steps to configure one of these media streaming containers:
 
-1. Configure authentication for your media streaming app. Can be done natively via the HTTP UI settings.
+1. Setup authentication for your media streaming app. Is done automatically during the HTTP setup wizard.
 2. Ensure to define your media location for your library. Can be done natively via the HTTP UI settings.
 3. Configure transcoding and passthrough your GPU into the container (optional)
 
