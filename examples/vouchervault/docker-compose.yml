@@ -1,10 +1,10 @@
 services:
 
   vouchervault:
-    image: l4rm4nd/vouchervault:1.7.x
+    image: l4rm4nd/vouchervault:1.12.x
     container_name: vouchervault
     environment:
-      # your FQDN or IP; used to define ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS
+      # your FQDN or IP; multiple ones supported via comma delimiter
       - DOMAIN=vouchervault.example.com
       # set to True if you use a reverse proxy with tls; enables secure cookie flag and hsts
       - SECURE_COOKIES=False
@@ -15,6 +15,8 @@ services:
       # ------- OPTIONAL OIDC AUTH --------
       # Set to 'True' to enable OIDC authentication
       #- OIDC_ENABLED=True
+      # Decide whether login area triggers automatic OIDC login flow
+      #- OIDC_AUTOLOGIN=False
       # Set to 'True' to allow the creation of new users through OIDC
       #- OIDC_CREATE_USER=True
       # The signing algorithm used by the OIDC provider (e.g., RS256, HS256)
