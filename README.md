@@ -63,6 +63,7 @@ docker compose up
 - [Genealogy](#genealogy)
 - [Identity Management - Single Sign-On (SSO) & LDAP](#identity-management---single-sign-on-sso--ldap)
 - [LLM & AI](#large-language-models--ai)
+- [Metrics & Metric Collection](#metrics--metric-collection)
 - [Miscellaneous](#miscellaneous)
 - [Money, Budgeting & Management](#money-budgeting--management)
 - [Note-taking & Editors](#note-taking--editors)
@@ -249,6 +250,7 @@ Digital [archiving](https://en.wikipedia.org/wiki/Archival_science) and [preserv
 - [Archivebox](examples/archivebox) - ArchiveBox is a powerful, self-hosted internet archiving solution to collect, save, and view websites offline.
 - [Shiori](examples/shiori) - Simple bookmark manager and website archiver built with Go.
 - [Readeck](examples/readeck) - Readeck is a simple web application that lets you save the precious readable content of web pages you like and want to keep forever.
+- [Linkwarden](examples/linkwarden) - Self-hosted collaborative bookmark manager to collect, organize, and preserve webpages, articles, and documents.
 
 ### Document Management
 
@@ -445,6 +447,15 @@ Multiplayer game servers, browser games and utilities for managing game servers.
 - [cs2-dedicated-server](examples/cs2-dedicated-server) - CS2 Dedicated Server Docker Image with an RCON web-based control panel.
 - [posio](examples/posio) - A multiplayer geography game using Websockets.
 - [Monkeytype](examples/monkeytype) - The most customizable typing website with a minimalistic design and a ton of features. Test yourself in various modes, track your progress and improve your speed.
+
+### Metrics & Metric Collection
+
+**[`^        back to top        ^`](#-project-list)**
+
+Metric gathering and display software.
+
+- [Grafana](examples/grafana) - The open and composable observability and data visualization platform. Visualize metrics, logs, and traces from multiple sources like Prometheus, Loki, Elasticsearch, InfluxDB, Postgres and many more.
+- [Grafana-LRVT](examples/grafana-monitoring) - Grafana combined with other open-source tools like Loki, Promtail, InfluxDB and Telegraf.
 
 ### Miscellaneous
 
